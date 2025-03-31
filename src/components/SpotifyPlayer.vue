@@ -337,9 +337,9 @@ export default defineComponent({
 
 .progress-container {
   position: absolute;
-  bottom: 7%;
+  bottom: 10%;
   left: 32%;
-  width: 40%;
+  width: 58%;
   display: flex;
   align-items: center;
   gap: 8px;

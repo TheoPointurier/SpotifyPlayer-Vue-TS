@@ -249,32 +249,33 @@ export default defineComponent({
           <i class="fas fa-redo"></i>
           <span v-if="isRepeating === 'track'" class="repeat-mode">1</span>
         </button>
-        <button class="control-button" @click="handlePreviousTrack" title="Previous">
+        <button class="control-button control-button-previous" @click="handlePreviousTrack" title="Previous">
           <i class="fas fa-backward"></i>
         </button>
         <button class="control-button play-pause" @click="handleTogglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
           <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
         </button>
-        <button class="control-button" @click="handleNextTrack" title="Next">
+        <button class="control-button control-button-next" @click="handleNextTrack" title="Next">
           <i class="fas fa-forward"></i>
         </button>
-        <button class="control-button" @click="handleToggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
+        <button class="control-button control-button-shuffle" @click="handleToggleShuffle"
+          :class="{ active: isShuffling }" title="Shuffle">
           <i class="fas fa-shuffle"></i>
         </button>
       </div>
-      <div class="progress-container">
-        <span class="progress-time">{{ formatDuration(progress) }}</span>
-        <div class="progress-bar">
-          <input type="range" min="0" max="100" step="1" :value="duration ? (progress / duration) * 100 : 0"
-            @mousedown="handleProgressDragStart" @input="handleProgressDrag" @mouseup="handleProgressDragEnd"
-            @touchstart="handleProgressDragStart" @touchmove="handleProgressDrag" @touchend="handleProgressDragEnd"
-            class="progress-slider" aria-label="Progression de la lecture"
-            :aria-valuenow="duration ? (progress / duration) * 100 : 0" aria-valuemin="0" aria-valuemax="100"
-            :aria-valuetext="`${formatDuration(progress)} de ${formatDuration(duration)}`" />
-          <div class="progress-fill" :style="{ width: `${duration ? (progress / duration) * 100 : 0}%` }"></div>
-        </div>
-        <span class="progress-time">{{ track ? formatDuration(track.duration_ms) : '00:00' }}</span>
+    </div>
+    <div class="progress-container">
+      <span class="progress-time">{{ formatDuration(progress) }}</span>
+      <div class="progress-bar">
+        <input type="range" min="0" max="100" step="1" :value="duration ? (progress / duration) * 100 : 0"
+          @mousedown="handleProgressDragStart" @input="handleProgressDrag" @mouseup="handleProgressDragEnd"
+          @touchstart="handleProgressDragStart" @touchmove="handleProgressDrag" @touchend="handleProgressDragEnd"
+          class="progress-slider" aria-label="Progression de la lecture"
+          :aria-valuenow="duration ? (progress / duration) * 100 : 0" aria-valuemin="0" aria-valuemax="100"
+          :aria-valuetext="`${formatDuration(progress)} de ${formatDuration(duration)}`" />
+        <div class="progress-fill" :style="{ width: `${duration ? (progress / duration) * 100 : 0}%` }"></div>
       </div>
+      <span class="progress-time">{{ track ? formatDuration(track.duration_ms) : '00:00' }}</span>
     </div>
     <div class="other-controls">
       <button class="control-button" title="Volume">
@@ -296,6 +297,7 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   max-height: 20vh;
+  position: relative;
 }
 
 .track-info {
@@ -334,6 +336,10 @@ export default defineComponent({
 }
 
 .progress-container {
+  position: absolute;
+  bottom: 7%;
+  left: 32%;
+  width: 40%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -446,26 +452,28 @@ export default defineComponent({
     padding: 0.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
   }
 
   .track-info {
     margin-left: 0;
+    width: 80%;
   }
 
   .track-details {
-    display: none;
+    height: 100%;
+    text-align: left;
   }
 
   .album-cover {
-    width: 100%;
-    height: 100%;
+    height: 90%;
+    width: auto;
   }
 
   .controls {
-    width: 100%;
+    width: 20%;
     height: 100%;
     display: flex;
     justify-content: space-between;
@@ -481,6 +489,13 @@ export default defineComponent({
 
   .control-button {
     font-size: 16px;
+  }
+
+  .control-button-repeat,
+  .control-button-shuffle,
+  .control-button-previous,
+  .control-button-next {
+    display: none;
   }
 
   .control-button:hover {
@@ -506,9 +521,9 @@ export default defineComponent({
   }
 
   .progress-container {
-    margin-top: 0;
-    flex: 1;
-    max-width: 79%;
+    bottom: 0;
+    left: 0;
+    width: 100%;
   }
 
   .progress-time {
@@ -517,6 +532,10 @@ export default defineComponent({
 
   .progress-bar {
     width: 10rem;
+  }
+
+  .progress-time {
+    display: none;
   }
 
   .other-controls {
@@ -528,11 +547,6 @@ export default defineComponent({
 
   .other-controls input[type="range"] {
     width: 50px;
-  }
-
-  .track-info {
-    width: 100%;
-    height: auto;
   }
 
   .no-track {

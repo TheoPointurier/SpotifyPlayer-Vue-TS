@@ -212,9 +212,6 @@ a:hover {
   color: var(--spotify-white);
   font-size: 1.5rem;
   cursor: pointer;
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
   z-index: 10000;
 }
 
@@ -235,7 +232,7 @@ a:hover {
 
 @media screen and (max-width: 768px) {
   .side-menu {
-    position: initial;
+    position: relative;
     flex-direction: row;
     width: 100%;
     height: 100%;

@@ -12,9 +12,13 @@ import {
   seekToPosition,
   toggleRepeatMode,
 } from '../services/spotifyPlayerService';
+import FullPlayerModal from './modals/FullPlayerModal.vue';
 
 export default defineComponent({
   name: 'SpotifyPlayer',
+  components: {
+    FullPlayerModal,
+  },
   setup() {
     const track = ref<Spotify.PlaybackState['track_window']['current_track'] | null>(null);
     const progress = ref<number>(0);
@@ -25,6 +29,60 @@ export default defineComponent({
     const isDragging = ref<boolean>(false);
     const volume = ref<number>(0.5);
     let progressInterval: NodeJS.Timeout | null = null;
+
+    const showFullPlayer = ref<boolean>(false);
+    const isMobile = ref<boolean>(false);
+
+    const checkIfMobile = () => {
+      isMobile.value = window.innerWidth <= 768;
+    }
+
+    onMounted(async () => {
+
+      checkIfMobile();
+      window.addEventListener('resize', checkIfMobile);
+
+      try {
+        await loadSpotifySDK();
+        await initializePlayer();
+
+        player.value?.addListener('player_state_changed', (state) => {
+          if (!state) return;
+          console.log('État du lecteur mis à jour:', state);
+          console.log('Position actuelle:', state.position); // Log pour déboguer
+          track.value = state.track_window.current_track;
+          duration.value = state.duration;
+          isPlaying.value = !state.paused;
+          isShuffling.value = state.shuffle;
+          isRepeating.value = state.repeat_mode === 0 ? 'off' : state.repeat_mode === 1 ? 'context' : 'track';
+
+          if (!isDragging.value) {
+            progress.value = state.position || 0;
+          }
+
+          if (track.value && track.value.uri !== currentTrackUri.value) {
+            setCurrentTrackUri(track.value.uri);
+          }
+
+          if (isPlaying.value) {
+            startProgress();
+          } else {
+            stopProgress();
+          }
+        });
+      } catch (error) {
+        console.error('Erreur lors de l’initialisation du Spotify SDK:', error);
+        if ((error as Error).message.includes('Utilisateur non authentifié')) {
+          window.location.href = '/spotify-app/login';
+        }
+      }
+    });
+
+    onUnmounted(() => {
+      stopProgress();
+      disconnectPlayer();
+      window.removeEventListener('resize', checkIfMobile);
+    });
 
     const loadSpotifySDK = () => {
       return new Promise<void>((resolve, reject) => {
@@ -72,48 +130,6 @@ export default defineComponent({
         progressInterval = null;
       }
     };
-
-    onMounted(async () => {
-      try {
-        await loadSpotifySDK();
-        await initializePlayer();
-
-        player.value?.addListener('player_state_changed', (state) => {
-          if (!state) return;
-          console.log('État du lecteur mis à jour:', state);
-          console.log('Position actuelle:', state.position); // Log pour déboguer
-          track.value = state.track_window.current_track;
-          duration.value = state.duration;
-          isPlaying.value = !state.paused;
-          isShuffling.value = state.shuffle;
-          isRepeating.value = state.repeat_mode === 0 ? 'off' : state.repeat_mode === 1 ? 'context' : 'track';
-
-          if (!isDragging.value) {
-            progress.value = state.position || 0;
-          }
-
-          if (track.value && track.value.uri !== currentTrackUri.value) {
-            setCurrentTrackUri(track.value.uri);
-          }
-
-          if (isPlaying.value) {
-            startProgress();
-          } else {
-            stopProgress();
-          }
-        });
-      } catch (error) {
-        console.error('Erreur lors de l’initialisation du Spotify SDK:', error);
-        if ((error as Error).message.includes('Utilisateur non authentifié')) {
-          window.location.href = '/spotify-app/login';
-        }
-      }
-    });
-
-    onUnmounted(() => {
-      stopProgress();
-      disconnectPlayer();
-    });
 
     const formatDuration = (durationMs: number): string => {
       const totalSeconds = Math.floor(durationMs / 1000);
@@ -209,6 +225,30 @@ export default defineComponent({
       }
     };
 
+    const openFullPlayer = () => {
+      if (isMobile.value) {
+        showFullPlayer.value = true;
+      }
+    };
+
+    const closeFullPlayer = () => {
+      showFullPlayer.value = false;
+    };
+
+    // Gérer la mise à jour de la progression depuis la modal
+    const handleProgressUpdate = async (data: { newProgress?: number; isDragging: boolean }) => {
+      isDragging.value = data.isDragging;
+      if (data.newProgress !== undefined) {
+        try {
+          await seekToPosition(data.newProgress);
+          progress.value = data.newProgress;
+        } catch (error) {
+          console.error('Erreur lors du seek:', error);
+          alert('Erreur lors du seek. Veuillez réessayer.');
+        }
+      }
+    };
+
     return {
       track,
       progress,
@@ -227,13 +267,18 @@ export default defineComponent({
       handleProgressDragEnd,
       handleVolumeChange,
       volume,
+      showFullPlayer,
+      openFullPlayer,
+      closeFullPlayer,
+      isMobile,
+      handleProgressUpdate,
     };
   },
 });
 </script>
 
 <template>
-  <div class="player">
+  <div class="player" @click="openFullPlayer">
     <div v-if="track" class="track-info">
       <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
       <div class="track-details">
@@ -244,21 +289,22 @@ export default defineComponent({
     <div v-else class="no-track">No track playing</div>
     <div class="controls">
       <div class="main-controls">
-        <button class="control-button control-button-repeat" @click="handleToggleRepeat"
+        <button class="control-button control-button-repeat" @click.stop="handleToggleRepeat"
           :class="{ active: isRepeating !== 'off' }" :title="`Repeat: ${isRepeating}`">
           <i class="fas fa-redo"></i>
           <span v-if="isRepeating === 'track'" class="repeat-mode">1</span>
         </button>
-        <button class="control-button control-button-previous" @click="handlePreviousTrack" title="Previous">
+        <button class="control-button control-button-previous" @click.stop="handlePreviousTrack" title="Previous">
           <i class="fas fa-backward"></i>
         </button>
-        <button class="control-button play-pause" @click="handleTogglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
+        <button class="control-button play-pause" @click.stop="handleTogglePlayPause"
+          :title="isPlaying ? 'Pause' : 'Play'">
           <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
         </button>
-        <button class="control-button control-button-next" @click="handleNextTrack" title="Next">
+        <button class="control-button control-button-next" @click.stop="handleNextTrack" title="Next">
           <i class="fas fa-forward"></i>
         </button>
-        <button class="control-button control-button-shuffle" @click="handleToggleShuffle"
+        <button class="control-button control-button-shuffle" @click.stop="handleToggleShuffle"
           :class="{ active: isShuffling }" title="Shuffle">
           <i class="fas fa-shuffle"></i>
         </button>
@@ -285,6 +331,15 @@ export default defineComponent({
         :aria-valuenow="volume * 100" aria-valuemin="0" aria-valuemax="100"
         :aria-valuetext="`${Math.round(volume * 100)}%`" />
     </div>
+
+    <transition name="slide-up">
+      <FullPlayerModal v-if="showFullPlayer" :track="track" :progress="progress" :duration="duration"
+        :is-playing="isPlaying" :is-shuffling="isShuffling" :is-repeating="isRepeating" :volume="volume"
+        @toggle-play-pause="handleTogglePlayPause" @next-track="handleNextTrack" @previous-track="handlePreviousTrack"
+        @toggle-shuffle="handleToggleShuffle" @toggle-repeat="handleToggleRepeat"
+        @update-progress="handleProgressUpdate" @update-volume="handleVolumeChange" @close="closeFullPlayer" />
+    </transition>
+
   </div>
 </template>
 
@@ -552,5 +607,16 @@ export default defineComponent({
   .no-track {
     font-size: 50%;
   }
+}
+
+/* Animation pour la modal */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
 }
 </style>

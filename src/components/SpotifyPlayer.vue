@@ -534,16 +534,23 @@ export default defineComponent({
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
-    padding-top: 21px;
+    /* padding-top: 21px; */
   }
 
   .main-controls {
     width: auto;
     gap: 8px;
+    height: 100%;
+    align-items: center;
   }
 
   .control-button {
     font-size: 16px;
+  }
+
+  .play-pause {
+    height: 80%;
+    width: 80%;
   }
 
   .control-button-repeat,

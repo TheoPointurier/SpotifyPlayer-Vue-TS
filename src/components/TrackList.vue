@@ -311,6 +311,7 @@ export default defineComponent({
   .track-info {
     width: 80%;
     gap: 0.5rem;
+    align-items: center;
   }
 
   .track-info img {

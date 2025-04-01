@@ -1,4 +1,3 @@
-<!-- src/components/PlaylistSelector.vue -->
 <template>
   <div class="playlist-selector">
     <h2 class="playlist-selector__title">Mes Playlists</h2>
@@ -6,7 +5,7 @@
       <ul class="playlist-list">
         <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card"
           @click="emitSelectPlaylist(playlist)">
-          <img :src="playlist.images?.[1]?.url || 'https://via.placeholder.com/200'" alt="Playlist cover"
+          <img :src="playlist.images?.[0]?.url || 'https://via.placeholder.com/200'" alt="Playlist cover"
             class="playlist-cover" @error="handleImageError" />
           <button class="playlist-button">
             {{ playlist.name }}

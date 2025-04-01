@@ -82,6 +82,36 @@ export const getPlaylistTracks = async (playlistId: string): Promise<SpotifyPlay
   }
 };
 
+export const getSavedTracks = async (): Promise<SpotifyPlaylistTrack[]> => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'GET',
+        path: '/v1/me/tracks?limit=50&offset=0',
+      }),
+    });
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Non authentifié. Veuillez vous reconnecter.');
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de la récupération des pistes sauvegardées: ${response.status} - ${errorText}`);
+    }
+    const data = await response.json();
+    return data.items || [];  
+  } catch (error) {
+    
+    console.error('Erreur lors de la récupération des pistes sauvegardées:', error);
+    throw error;
+
+  } 
+};
+
 export const playTrack = async (trackUri: string, queue: string[]): Promise<void> => {
   try {
     const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {

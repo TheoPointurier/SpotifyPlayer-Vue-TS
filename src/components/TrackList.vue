@@ -1,4 +1,3 @@
-<!-- src/components/TrackList.vue -->
 <template>
   <div class="tracks-section">
     <h3>{{ selectedPlaylist?.name || 'No Playlist Selected' }}</h3>

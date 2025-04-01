@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import PlaylistSelector from '../components/PlaylistSelector.vue';
 import TrackList from '../components/TrackList.vue';
-import { getUserPlaylists, getPlaylistTracks } from '../services/spotifyService';
+import { getUserPlaylists, getPlaylistTracks, getSavedTracks } from '../services/spotifyService';
 import { isPlayerReady } from '../services/spotifyPlayerSetup';
 import { clearQueue, addToQueue } from '../services/playbackState';
 
@@ -10,6 +10,7 @@ import { clearQueue, addToQueue } from '../services/playbackState';
 const playlists = ref<SpotifyPlaylist[]>([]);
 const selectedPlaylist = ref<SpotifyPlaylist | null>(null);
 const tracks = ref<SpotifyPlaylistTrack[]>([]);
+const savedTracks = ref<SpotifyPlaylistTrack[]>([]);
 const hasInitializedContext = ref<boolean>(false);
 const isLoading = ref<boolean>(true);
 const error = ref<string | null>(null);
@@ -20,6 +21,16 @@ const fetchPlaylists = async () => {
     isLoading.value = true;
     playlists.value = await getUserPlaylists();
     console.log('Playlists chargées:', playlists.value);
+
+    playlists.value.unshift({
+      id: 'liked-songs',
+      name: 'Titres Likés',
+      images: [
+        {
+          url: '/spotify-app/liked.png',
+        },
+      ],
+    } as SpotifyPlaylist);
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   } catch (err: any) {
     console.error('Erreur lors du chargement des playlists:', err);
@@ -34,13 +45,41 @@ const fetchPlaylists = async () => {
   }
 };
 
+const fetchSavedTracks = async () => {
+  try {
+    isLoading.value = true;
+    savedTracks.value = await getSavedTracks();
+    console.log('Pistes sauvegardées chargées:', savedTracks.value);
+  } catch (err) {
+    console.error('Erreur lors du chargement des pistes sauvegardées:', err);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const selectPlaylist = async (playlist: SpotifyPlaylist) => {
   selectedPlaylist.value = playlist;
+
+  if (playlist.id === 'liked-songs') {
+    console.log('Récupération des pistes sauvegardées');
+    tracks.value = savedTracks.value;
+
+    clearQueue();
+    for (const track of tracks.value) {
+      addToQueue(track.track.uri);
+    }
+
+    return;
+  }
+
   try {
+
     console.log('Récupération des pistes pour la playlist:', playlist.name);
     tracks.value = await getPlaylistTracks(playlist.id);
+
     console.log('Pistes récupérées:', tracks.value);
     clearQueue();
+
     for (const track of tracks.value) {
       addToQueue(track.track.uri);
     }
@@ -56,6 +95,7 @@ const updateContext = (value: boolean) => {
 // Lifecycle hooks
 onMounted(async () => {
   await fetchPlaylists();
+  await fetchSavedTracks();
 });
 </script>
 

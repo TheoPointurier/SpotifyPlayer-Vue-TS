@@ -611,6 +611,17 @@ export default defineComponent({
     width: 50px;
   }
 
+  .artist-name {
+    font-size: 12px;
+  }
+
+  .track-name {
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 0;
+    text-overflow: ellipsis;
+  }
+
   .no-track {
     font-size: 50%;
   }

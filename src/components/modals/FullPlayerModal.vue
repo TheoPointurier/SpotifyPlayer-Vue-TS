@@ -127,14 +127,14 @@ export default defineComponent({
         <span v-if="isRepeating === 'track'" class="repeat-mode">1</span>
       </button>
     </div>
-    <div class="other-controls">
+    <!-- <div class="other-controls">
       <button class="control-button" title="Volume">
         <i class="fas fa-volume-up"></i>
       </button>
       <input type="range" min="0" max="1" step="0.01" :value="volume" @input="$emit('update-volume')"
         aria-label="Volume" :aria-valuenow="volume * 100" aria-valuemin="0" aria-valuemax="100"
         :aria-valuetext="`${Math.round(volume * 100)}%`" />
-    </div>
+    </div> -->
   </div>
 </template>
 

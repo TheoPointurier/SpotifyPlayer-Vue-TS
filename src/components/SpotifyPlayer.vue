@@ -353,6 +353,8 @@ export default defineComponent({
   justify-content: space-between;
   max-height: 20vh;
   position: relative;
+  background-color: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
+  z-index: 9999999;
 }
 
 .track-info {

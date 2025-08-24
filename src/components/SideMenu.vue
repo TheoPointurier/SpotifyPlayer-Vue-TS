@@ -168,6 +168,7 @@ onMounted(async () => {
 
 .menu-list-bottom {
   justify-self: end;
+  padding-bottom: 1rem;
 }
 
 .menu-text {
@@ -301,6 +302,12 @@ a:hover {
 
   .burger-button:hover {
     color: var(--spotify-green);
+  }
+
+  @media screen and (min-width: 750px) {
+    .burger-button {
+      display: none;
+    }
   }
 }
 </style>

@@ -345,7 +345,7 @@ export default defineComponent({
 
 <style scoped>
 .player {
-  padding: 0 0.5rem;
+  padding: 0 2rem;
   width: 100%;
   grid-column: 1 / 3;
   display: flex;
@@ -607,6 +607,7 @@ export default defineComponent({
     display: none;
     align-items: center;
     gap: 4px;
+
   }
 
   .other-controls input[type="range"] {

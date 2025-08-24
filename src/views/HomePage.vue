@@ -2,15 +2,16 @@
 <template>
   <div class="home">
     <div class="intro">
-      <h2>La super playlist</h2>
+      <h2>La Superbe PLAYLIST</h2>
       <p>Voici ma playlist confectionnée avec soin, à écouter à tout moment de la journée pour une ambiance toujours
-        "Fresh"</p>
+        "Fresh",</p>
+      <p>Vous pouvez aussi accéder à vos playlists comme sur Spotify.</p>
     </div>
     <div class="hero" v-if="playlist">
       <img class="cover" :src="playlist.images?.[0]?.url" alt="" />
       <div class="actions">
         <button class="btn" :class="{ active: isShuffling }" @click="onToggleShuffle">
-          🔀 {{ isShuffling ? 'Shuffle activé' : 'Activer shuffle' }}
+          🔀 {{ isShuffling ? '' : '' }}
         </button>
       </div>
       <div class="meta">
@@ -183,17 +184,24 @@ onMounted(async () => {
 .intro {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  max-width: 500px;
-  height: 20rem;
+  /* justify-content: center; */
+  max-width: 30rem;
+  height: 12rem;
+  /* max-height: max-content; */
   margin: 0 auto;
   line-height: 1.4;
   opacity: 0.9;
+  /* overflow: scroll; */
 }
 
-.intro h2 {
+.intro>h2 {
   font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+}
+
+.intro>p {
+  font-size: 0.9rem;
+  word-wrap: break-word;
+
 }
 
 /* Hero */
@@ -230,8 +238,8 @@ onMounted(async () => {
 
 
 .cover {
-  width: 180px;
-  height: 180px;
+  width: 140px;
+  height: 140px;
   object-fit: cover;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
@@ -349,6 +357,12 @@ onMounted(async () => {
   text-align: right;
 }
 
+.album,
+.duration {
+  align-items: center;
+  display: flex;
+}
+
 .state,
 .empty,
 .error {
@@ -357,5 +371,39 @@ onMounted(async () => {
 
 .error {
   color: #ffb4b4;
+}
+
+@media screen and (max-width: 600px) {
+  .hero {
+    display: flex;
+    /* flex-wrap: wrap; */
+    /* grid-template-columns: 120px 1fr; */
+    gap: 12px;
+  }
+
+  .intro {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .cover {
+    width: 100px;
+    height: 100px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 0;
+  }
+
+  .btn {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
 }
 </style>
